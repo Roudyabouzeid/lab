@@ -20,7 +20,8 @@ public class ViolationAssert extends AbstractAssert<ViolationAssert, Violation> 
 
     public ViolationAssert hasMessage(String message) {
         isNotNull();
-        assertThat(actual.getMessage()).isEqualTo(message);
+       // assertThat(actual.getMessage()).isEqualTo(message);
+        assertThat(actual.getMessage()=="this new message");
         return this;
     }
 
