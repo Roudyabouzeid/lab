@@ -12,6 +12,9 @@ import pl.touk.sputnik.configuration.ConfigurationSetup;
 import pl.touk.sputnik.configuration.GeneralOption;
 import pl.touk.sputnik.review.ReviewResult;
 
+import java.util.List;
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CheckstyleProcessorTest extends TestEnvironment {
@@ -40,6 +43,19 @@ class CheckstyleProcessorTest extends TestEnvironment {
                 );
     }
 
+    @Test
+    void shouldReturnAListWithTheProblemsFound() {
+        List<Map<String, Object>> results = fixture.analyzeFiles(review2(true));
+        assertThat(results).isNotNull();
+        assertThat(results.size()).isGreaterThan(0);
+    }
+
+    @Test
+    void shouldReturnAnEmptyListBecauseNoProblemFound() {
+        List<Map<String, Object>> results = fixture.analyzeFiles(review2(false));
+        assertThat(results).isNotNull();
+        assertThat(results.size()).isEqualTo(0);
+    }
     @Test
     void shouldConsiderSuppressionsWithConfigLocProperty() {
         Configuration configWithSuppressions = new ConfigurationSetup().setUp(ImmutableMap.of(

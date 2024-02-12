@@ -11,6 +11,8 @@ import pl.touk.sputnik.review.ReviewFormatter;
 import pl.touk.sputnik.review.ReviewFormatterFactory;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.google.common.io.Resources.getResource;
 
@@ -28,6 +30,17 @@ public abstract class TestEnvironment {
     protected Review review() {
         return review("java/TestFile.java");
     }
+
+    protected List<File> review2(Boolean withError) {
+        List<File> fileList = new ArrayList<>();
+        if (withError) {
+            fileList.add(new File(Resources.getResource("java/TestFile2.java").getFile()));
+        } else {
+            fileList.add(new File(Resources.getResource("java/TestFile.java").getFile()));
+        }
+        return fileList;
+    }
+
 
     protected Review review(String filename) {
         return new Review(ImmutableList.of(new ReviewFile(Resources.getResource(filename).getFile())), formatter);

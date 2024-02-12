@@ -19,11 +19,13 @@ import pl.touk.sputnik.review.ReviewResult;
 import pl.touk.sputnik.review.filter.JavaFilter;
 import pl.touk.sputnik.review.transformer.IOFileTransformer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 @Slf4j
 @AllArgsConstructor
@@ -45,10 +47,50 @@ public class CheckstyleProcessor implements ReviewProcessor {
         return SOURCE_NAME;
     }
 
+    public List<Map<String, Object>> analyzeFiles(List<File> files) {
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        for (File file : files) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                int lineNumber = 0;
+
+                while ((line = reader.readLine()) != null) {
+                    lineNumber++;
+                    boolean containsUsername = line.contains("username");
+                    boolean containsPassword = line.contains("password");
+
+                    if (containsUsername || containsPassword) {
+                        Map<String, Object> lineResult = new HashMap<>();
+                        lineResult.put("lineNumber", lineNumber);
+                        lineResult.put("username", containsUsername);
+                        lineResult.put("password", containsPassword);
+                        lineResult.put("filename", file.getName());
+                        results.add(lineResult);
+
+                        logResult(lineResult); // Log to console
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return results;
+    }
+
+    private static void logResult(Map<String, Object> result) {
+        System.out.println("File: " + result.get("filename") +
+                ", Line: " + result.get("lineNumber") +
+                ", Contains 'username': " + result.get("username") +
+                ", Contains 'password': " + result.get("password"));
+    }
+
     private void innerProcess(@NotNull Review review, @NotNull AuditListener auditListener) {
         List<File> files = review.getFiles(new JavaFilter(), new IOFileTransformer());
         Checker checker = createChecker(auditListener);
         try {
+            this.analyzeFiles(files);
             checker.process(files);
         } catch (CheckstyleException e) {
             throw new ReviewException("Unable to process files with Checkstyle", e);
